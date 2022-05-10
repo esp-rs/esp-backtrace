@@ -26,6 +26,7 @@ fn panic_handler(info: &core::panic::PanicInfo) -> ! {
 
 #[cfg(all(feature = "exception-handler", target_arch = "xtensa"))]
 #[no_mangle]
+#[link_section = ".rwtext"]
 unsafe extern "C" fn __exception(
     cause: xtensa_lx_rt::exception::ExceptionCause,
     context: xtensa_lx_rt::exception::Context,
@@ -42,6 +43,11 @@ unsafe extern "C" fn __exception(
             println!("0x{:x}", addr);
         }
     }
+
+    println!("");
+    println!("");
+    println!("");
+
     loop {}
 }
 
@@ -96,13 +102,11 @@ fn is_valid_ram_address(address: u32) -> bool {
         return false;
     }
 
-    // TODO
     #[cfg(feature = "esp32s2")]
     if !(0x3ff9e000..=0x3fffffff).contains(&address) {
         return false;
     }
 
-    // TODO
     #[cfg(feature = "esp32s3")]
     if !(0x3fc80000..=0x3fffffff).contains(&address) {
         return false;

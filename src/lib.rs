@@ -53,7 +53,7 @@ unsafe extern "C" fn __exception(
 
 #[cfg(all(feature = "exception-handler", target_arch = "riscv32"))]
 #[export_name = "ExceptionHandler"]
-fn exception_handler(context: &esp32c3_hal::interrupt::TrapFrame) -> ! {
+fn exception_handler(context: &arch::TrapFrame) -> ! {
     use esp_println::*;
 
     let mepc = riscv::register::mepc::read();

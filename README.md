@@ -1,10 +1,8 @@
 # esp-backtrace - backtrace for ESP32 bare-metal
 
-- supports ESP32, ESP32C3, ESP32S2, ESP32S3
-- optional features: `panic-handler`, `exception-handler` (will enable `esp-println` depdendency)
-- work-in-progress, yet already useable
+Supports the ESP32, ESP32-C3, ESP32-S2, and ESP32-S3. Optional exception and panic handlers are included, both of which can be enabled via their respective features.
 
-Please note: On RISCV you **need** to force frame pointers (i.e. `"-C", "force-frame-pointers",` in your `.cargo/config.toml`)
+Please note that you **need** to force frame pointers (i.e. `"-C", "force-frame-pointers",` in your `.cargo/config.toml`)
 
 You can get an array of backtrace addresses (currently limited to 10) via `arch::backtrace()` if
 you want to create a backtrace yourself (i.e. not using the panic or exception handler).
@@ -16,19 +14,19 @@ When using this together with `esp-println` make sure to use the same output kin
 
 ## Features
 
-|Feature|Description|
-|---|---|
-|esp32|Target ESP32|
-|esp32c3|Target ESP32C3|
-|esp32s2|Target ESP32S2|
-|esp32s3|Target ESP32S3|
-|panic-handler|Include a panic handler, will add `esp-println` as a dependency|
-|exception-handler|Include an exception handler, will add `esp-println` as a dependency|
-|print-uart|Use UART to print messages (*)|
-|print-jtag-serial|Use JTAG-Serial to print messages (*)|
-|print-rtt|Use RTT to print messages (*)|
+| Feature           | Description                                                          |
+| ----------------- | -------------------------------------------------------------------- |
+| esp32             | Target ESP32                                                         |
+| esp32c3           | Target ESP32-C3                                                      |
+| esp32s2           | Target ESP32-S2                                                      |
+| esp32s3           | Target ESP32-S3                                                      |
+| panic-handler     | Include a panic handler, will add `esp-println` as a dependency      |
+| exception-handler | Include an exception handler, will add `esp-println` as a dependency |
+| print-uart        | Use UART to print messages\*                                         |
+| print-jtag-serial | Use JTAG-Serial to print messages\*                                  |
+| print-rtt         | Use RTT to print messages\*                                          |
 
- (*) _only used for panic and exception handlers_
+\* _only used for panic and exception handlers_
 
 ## License
 

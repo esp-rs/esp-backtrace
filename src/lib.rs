@@ -12,7 +12,29 @@ pub mod arch;
 fn panic_handler(info: &core::panic::PanicInfo) -> ! {
     use esp_println::*;
 
-    println!("{:?}", info);
+    println!(" ");
+
+    if let Some(location) = info.location() {
+        let (file, line, column) = (location.file(), location.line(), location.column());
+        println!("!! A panic occured in '{file}', at line {line}, column {column}");
+    } else {
+        println!("!! A panic occured at an unknown location");
+    }
+
+    println!(" ");
+
+    // See: https://github.com/rust-lang/rust/issues/66745
+    //if let Some(msg) = info.message() {
+    //    println!("  Message: {msg}");
+    //}
+
+    print!("  Payload: ");
+    if let Some(s) = info.payload().downcast_ref::<&str>() {
+        println!("{s}");
+    }
+
+    println!("Backtrace:");
+    println!(" ");
 
     let backtrace = crate::arch::backtrace();
     for e in backtrace {

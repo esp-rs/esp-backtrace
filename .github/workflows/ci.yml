@@ -1,0 +1,52 @@
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+  workflow_dispatch:
+
+name: CI
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  check-riscv:
+    name: Check RISC-V
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        printer: ["print-jtag-serial", "print-rtt", "print-uart"]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          target: riscv32imc-unknown-none-elf
+          toolchain: nightly
+          components: rust-src
+          default: true
+      - uses: Swatinem/rust-cache@v1
+      - uses: actions-rs/cargo@v1
+        with:
+          command: check
+          args: -Zbuild-std=core --target=riscv32imc-unknown-none-elf --features=esp32c3,panic-handler,exception-handler,${{ matrix.printer }}
+
+  check-xtensa:
+    name: Check Xtensa
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        chip: [esp32, esp32s2, esp32s3]
+        printer: ["print-rtt", "print-uart"] # The ESP32 and ESP32-S2 do *not* have USB Serial JTAG, so we'll skip them
+    steps:
+      - uses: actions/checkout@v2
+      - uses: esp-rs/xtensa-toolchain@v1.2
+        with:
+          default: true
+          ldproxy: false
+      - uses: Swatinem/rust-cache@v1
+      - uses: actions-rs/cargo@v1
+        with:
+          command: check
+          args: -Zbuild-std=core --target=xtensa-${{ matrix.chip }}-none-elf --features=${{ matrix.chip }},panic-handler,exception-handler,${{ matrix.printer }}

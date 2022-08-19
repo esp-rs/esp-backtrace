@@ -12,7 +12,21 @@ pub mod arch;
 fn panic_handler(info: &core::panic::PanicInfo) -> ! {
     use esp_println::*;
 
-    println!("{:?}", info);
+    println!(" ");
+    println!(" ");
+
+    if let Some(location) = info.location() {
+        let (file, line, column) = (location.file(), location.line(), location.column());
+        println!("!! A panic occured in '{file}', at line {line}, column {column}");
+    } else {
+        println!("!! A panic occured at an unknown location");
+    }
+
+    println!(" ");
+    println!("{:#?}", info);
+    println!(" ");
+    println!("Backtrace:");
+    println!(" ");
 
     let backtrace = crate::arch::backtrace();
     for e in backtrace {

@@ -13,6 +13,7 @@ fn panic_handler(info: &core::panic::PanicInfo) -> ! {
     use esp_println::*;
 
     println!(" ");
+    println!(" ");
 
     if let Some(location) = info.location() {
         let (file, line, column) = (location.file(), location.line(), location.column());
@@ -22,17 +23,8 @@ fn panic_handler(info: &core::panic::PanicInfo) -> ! {
     }
 
     println!(" ");
-
-    // See: https://github.com/rust-lang/rust/issues/66745
-    //if let Some(msg) = info.message() {
-    //    println!("  Message: {msg}");
-    //}
-
-    print!("  Payload: ");
-    if let Some(s) = info.payload().downcast_ref::<&str>() {
-        println!("{s}");
-    }
-
+    println!("{:#?}", info);
+    println!(" ");
     println!("Backtrace:");
     println!(" ");
 

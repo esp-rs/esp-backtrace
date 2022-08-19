@@ -1,12 +1,13 @@
 [package]
 name = "esp-backtrace"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 description = "Bare-metal backtrace support for ESP32"
 repository = "https://github.com/esp-rs/esp-backtrace"
 license = "MIT OR Apache-2.0"
 
 [package.metadata.docs.rs]
+default-target = "riscv32imc-unknown-none-elf"
 features = ["esp32c3", "panic-handler", "exception-handler", "print-uart"]
 
 [dependencies]

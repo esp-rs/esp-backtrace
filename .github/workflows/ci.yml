@@ -16,7 +16,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        printer: ["print-jtag-serial", "print-rtt", "print-uart"]
+        chip: [esp32c3]
+        printer: ["print-rtt", "print-uart"]
+        include:
+          - chip: esp32c3
+            printer: "print-jtag-serial"
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -30,7 +34,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: check
-          args: -Zbuild-std=core --target=riscv32imc-unknown-none-elf --features=esp32c3,panic-handler,exception-handler,${{ matrix.printer }}
+          args: -Zbuild-std=core --target=riscv32imc-unknown-none-elf --features=${{ matrix.chip }},panic-handler,exception-handler,${{ matrix.printer }}
 
   check-xtensa:
     name: Check Xtensa
@@ -38,7 +42,10 @@ jobs:
     strategy:
       matrix:
         chip: [esp32, esp32s2, esp32s3]
-        printer: ["print-rtt", "print-uart"] # The ESP32 and ESP32-S2 do *not* have USB Serial JTAG, so we'll skip them
+        printer: ["print-rtt", "print-uart"]
+        include:
+          - chip: esp32s3
+            printer: "print-jtag-serial"
     steps:
       - uses: actions/checkout@v2
       - uses: esp-rs/xtensa-toolchain@v1.2

@@ -10,7 +10,7 @@ pub mod arch;
 #[cfg(feature = "panic-handler")]
 #[panic_handler]
 fn panic_handler(info: &core::panic::PanicInfo) -> ! {
-    use esp_println::*;
+    use esp_println::println;
 
     println!(" ");
     println!(" ");
@@ -45,7 +45,8 @@ unsafe extern "C" fn __exception(
     cause: xtensa_lx_rt::exception::ExceptionCause,
     context: xtensa_lx_rt::exception::Context,
 ) {
-    use esp_println::*;
+    use esp_println::println;
+
     println!("\n\nException occured {:?} {:x?}", cause, context);
 
     println!("0x{:x}", crate::arch::sanitize_address(context.PC));
@@ -68,7 +69,7 @@ unsafe extern "C" fn __exception(
 #[cfg(all(feature = "exception-handler", target_arch = "riscv32"))]
 #[export_name = "ExceptionHandler"]
 fn exception_handler(context: &arch::TrapFrame) -> ! {
-    use esp_println::*;
+    use esp_println::println;
 
     let mepc = riscv::register::mepc::read();
     let code = riscv::register::mcause::read().code() & 0xff;
@@ -102,11 +103,12 @@ fn exception_handler(context: &arch::TrapFrame) -> ! {
             println!("0x{:x}", addr);
         }
     }
+
     loop {}
 }
 
 fn is_valid_ram_address(address: u32) -> bool {
-    #[cfg(feature = "esp32c3")]
+    #[cfg(any(feature = "esp32c2", feature = "esp32c3"))]
     if !(0x38000000..=0x3fffffff).contains(&address) {
         return false;
     }

@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        chip: [esp32c3]
+        chip: [esp32c2, esp32c3]
         printer: ["print-rtt", "print-uart"]
         include:
           - chip: esp32c3

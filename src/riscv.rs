@@ -1,5 +1,6 @@
-use crate::MAX_BACKTRACE_ADRESSES;
 use core::arch::asm;
+
+use crate::MAX_BACKTRACE_ADRESSES;
 
 /// Registers saved in trap handler
 #[doc(hidden)]
@@ -38,6 +39,10 @@ pub(crate) struct TrapFrame {
     pub gp: usize,
     pub tp: usize,
     pub sp: usize,
+    pub pc: usize,
+    pub mstatus: usize,
+    pub mcause: usize,
+    pub mtval: usize,
 }
 
 /// Get an array of backtrace addresses.

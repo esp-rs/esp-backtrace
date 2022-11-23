@@ -11,18 +11,27 @@ default-target = "riscv32imc-unknown-none-elf"
 features = ["esp32c3", "panic-handler", "exception-handler", "print-uart"]
 
 [dependencies]
-esp-println = { version = "0.3.0", optional = true, default-features = false }
-riscv = { version = "0.8.0", optional = true }
+esp-println = { git = "https://github.com/esp-rs/esp-println", rev = "adcde19", optional = true, default-features = false }
+riscv = { version = "0.10.0", optional = true }
 xtensa-lx-rt = { version = "0.13.0", optional = true }
 
 [features]
+# You must enable exactly 1 of the below features to support the correct chip:
+esp32   = ["esp-println?/esp32", "xtensa-lx-rt/esp32"]
 esp32c2 = ["esp-println?/esp32c2", "riscv"]
 esp32c3 = ["esp-println?/esp32c3", "riscv"]
-esp32 = ["esp-println?/esp32", "xtensa-lx-rt/esp32"]
+esp32c6 = ["esp-println?/esp32c6", "riscv"]
+esp32h2 = ["esp-println?/esp32h2", "riscv"]
 esp32s2 = ["esp-println?/esp32s2", "xtensa-lx-rt/esp32s2"]
 esp32s3 = ["esp-println?/esp32s3", "xtensa-lx-rt/esp32s3"]
-panic-handler = ["esp-println"]
-exception-handler = ["esp-println"]
-print-uart = ["esp-println/uart"]
+
+# You must enable exactly 1 of the below features to enable to intended
+# communication method:
 print-jtag-serial = ["esp-println/jtag_serial"]
 print-rtt = ["esp-println/rtt"]
+print-uart = ["esp-println/uart"]
+
+# You may optionally enable either (or both) of the below features to provide
+# additional functionality:
+exception-handler = ["esp-println"]
+panic-handler = ["esp-println"]

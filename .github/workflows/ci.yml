@@ -15,6 +15,7 @@ jobs:
     name: Check RISC-V
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         chip: [esp32c2, esp32c3]
         printer: ["print-rtt", "print-uart"]
@@ -40,6 +41,7 @@ jobs:
     name: Check Xtensa
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         chip: [esp32, esp32s2, esp32s3]
         printer: ["print-rtt", "print-uart"]

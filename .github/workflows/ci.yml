@@ -9,12 +9,14 @@ name: CI
 
 env:
   CARGO_TERM_COLOR: always
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   check-riscv:
     name: Check RISC-V
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         chip: [esp32c2, esp32c3]
         printer: ["print-rtt", "print-uart"]
@@ -22,7 +24,7 @@ jobs:
           - chip: esp32c3
             printer: "print-jtag-serial"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -30,7 +32,7 @@ jobs:
           toolchain: nightly
           components: rust-src
           default: true
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
       - uses: actions-rs/cargo@v1
         with:
           command: check
@@ -40,6 +42,7 @@ jobs:
     name: Check Xtensa
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         chip: [esp32, esp32s2, esp32s3]
         printer: ["print-rtt", "print-uart"]
@@ -47,12 +50,12 @@ jobs:
           - chip: esp32s3
             printer: "print-jtag-serial"
     steps:
-      - uses: actions/checkout@v2
-      - uses: esp-rs/xtensa-toolchain@v1.2
+      - uses: actions/checkout@v3
+      - uses: esp-rs/xtensa-toolchain@v1.5
         with:
           default: true
           ldproxy: false
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
       - uses: actions-rs/cargo@v1
         with:
           command: check

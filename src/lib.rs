@@ -29,28 +29,27 @@ fn panic_handler(info: &core::panic::PanicInfo) -> ! {
     println!(" ");
 
     let backtrace = crate::arch::backtrace();
+    #[cfg(target_arch = "riscv32")]
+    if backtrace.iter().filter(|e| e.is_some()).count() == 0 {
+        println!("No backtrace available - make sure to force frame-pointers. (see https://crates.io/crates/esp-backtrace)");
+    }
     for e in backtrace {
         if let Some(addr) = e {
             println!("0x{:x}", addr);
         }
     }
 
-    loop {}
+    halt();
 }
 
 #[cfg(all(feature = "exception-handler", target_arch = "xtensa"))]
 #[no_mangle]
 #[link_section = ".rwtext"]
-unsafe extern "C" fn __exception(
-    cause: xtensa_lx_rt::exception::ExceptionCause,
-    context: xtensa_lx_rt::exception::Context,
-) {
+unsafe extern "C" fn __exception(cause: arch::ExceptionCause, context: arch::Context) {
     use esp_println::println;
 
-    println!("\n\nException occured {:?} {:x?}", cause, context);
-
-    println!("0x{:x}", crate::arch::sanitize_address(context.PC));
-    println!("0x{:x}", crate::arch::sanitize_address(context.A0));
+    println!("\n\nException occured '{:?}'", cause);
+    println!("{:?}", context);
 
     let backtrace = crate::arch::backtrace_internal(context.A1, 0);
     for e in backtrace {
@@ -63,7 +62,7 @@ unsafe extern "C" fn __exception(
     println!("");
     println!("");
 
-    loop {}
+    halt();
 }
 
 #[cfg(all(feature = "exception-handler", target_arch = "riscv32"))]
@@ -71,9 +70,9 @@ unsafe extern "C" fn __exception(
 fn exception_handler(context: &arch::TrapFrame) -> ! {
     use esp_println::println;
 
-    let mepc = riscv::register::mepc::read();
-    let code = riscv::register::mcause::read().code() & 0xff;
-    let mtval = riscv::register::mtval::read();
+    let mepc = context.pc;
+    let code = context.mcause & 0xff;
+    let mtval = context.mtval;
 
     let code = match code {
         0 => "Instruction address misaligned",
@@ -94,17 +93,27 @@ fn exception_handler(context: &arch::TrapFrame) -> ! {
         15 => "Store/AMO page fault",
         _ => "UNKNOWN",
     };
-    println!("Exception '{}' mepc={:x}, mtval={:x}", code, mepc, mtval);
+    println!(
+        "Exception '{}' mepc=0x{:08x}, mtval=0x{:08x}",
+        code, mepc, mtval
+    );
     println!("{:x?}", context);
 
     let backtrace = crate::arch::backtrace_internal(context.s0 as u32, 0);
+    if backtrace.iter().filter(|e| e.is_some()).count() == 0 {
+        println!("No backtrace available - make sure to force frame-pointers. (see https://crates.io/crates/esp-backtrace)");
+    }
     for e in backtrace {
         if let Some(addr) = e {
             println!("0x{:x}", addr);
         }
     }
 
-    loop {}
+    println!("");
+    println!("");
+    println!("");
+
+    halt();
 }
 
 fn is_valid_ram_address(address: u32) -> bool {
@@ -129,4 +138,8 @@ fn is_valid_ram_address(address: u32) -> bool {
     }
 
     true
+}
+
+fn halt() -> ! {
+    loop {}
 }

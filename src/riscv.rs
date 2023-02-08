@@ -5,7 +5,7 @@ use crate::MAX_BACKTRACE_ADRESSES;
 /// Registers saved in trap handler
 #[doc(hidden)]
 #[allow(missing_docs)]
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(Default, Clone, Copy)]
 #[repr(C)]
 pub(crate) struct TrapFrame {
     pub ra: usize,
@@ -43,6 +43,62 @@ pub(crate) struct TrapFrame {
     pub mstatus: usize,
     pub mcause: usize,
     pub mtval: usize,
+}
+
+impl core::fmt::Debug for TrapFrame {
+    fn fmt(&self, fmt: &mut core::fmt::Formatter<'_>) -> Result<(), core::fmt::Error> {
+        write!(
+            fmt,
+            "TrapFrame
+PC=0x{:08x}         RA/x1=0x{:08x}      SP/x2=0x{:08x}      GP/x3=0x{:08x}      TP/x4=0x{:08x}
+T0/x5=0x{:08x}      T1/x6=0x{:08x}      T2/x7=0x{:08x}      S0/FP/x8=0x{:08x}   S1/x9=0x{:08x}
+A0/x10=0x{:08x}     A1/x11=0x{:08x}     A2/x12=0x{:08x}     A3/x13=0x{:08x}     A4/x14=0x{:08x}
+A5/x15=0x{:08x}     A6/x16=0x{:08x}     A7/x17=0x{:08x}     S2/x18=0x{:08x}     S3/x19=0x{:08x}
+S4/x20=0x{:08x}     S5/x21=0x{:08x}     S6/x22=0x{:08x}     S7/x23=0x{:08x}     S8/x24=0x{:08x}
+S9/x25=0x{:08x}     S10/x26=0x{:08x}    S11/x27=0x{:08x}    T3/x28=0x{:08x}     T4/x29=0x{:08x}
+T5/x30=0x{:08x}     T6/x31=0x{:08x}
+
+MSTATUS=0x{:08x}
+MCAUSE=0x{:08x}
+MTVAL=0x{:08x}
+        ",
+            self.pc,
+            self.ra,
+            self.gp,
+            self.sp,
+            self.tp,
+            self.t0,
+            self.t1,
+            self.t2,
+            self.s0,
+            self.s1,
+            self.a0,
+            self.a1,
+            self.a2,
+            self.a3,
+            self.a4,
+            self.a5,
+            self.a6,
+            self.a7,
+            self.s2,
+            self.s3,
+            self.s4,
+            self.s5,
+            self.s6,
+            self.s7,
+            self.s8,
+            self.s9,
+            self.s10,
+            self.s11,
+            self.t3,
+            self.t4,
+            self.t5,
+            self.t6,
+            self.mstatus,
+            self.mcause,
+            self.mtval,
+        )
+    }
 }
 
 /// Get an array of backtrace addresses.

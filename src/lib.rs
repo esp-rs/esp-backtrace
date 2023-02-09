@@ -45,7 +45,7 @@ fn panic_handler(info: &core::panic::PanicInfo) -> ! {
 #[cfg(all(feature = "exception-handler", target_arch = "xtensa"))]
 #[no_mangle]
 #[link_section = ".rwtext"]
-unsafe extern "C" fn __exception(cause: arch::ExceptionCause, context: arch::Context) {
+unsafe fn __user_exception(cause: arch::ExceptionCause, context: arch::Context) {
     use esp_println::println;
 
     println!("\n\nException occured '{:?}'", cause);

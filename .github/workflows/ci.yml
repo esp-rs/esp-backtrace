@@ -25,18 +25,13 @@ jobs:
             printer: "print-jtag-serial"
     steps:
       - uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@v1
         with:
-          profile: minimal
           target: riscv32imc-unknown-none-elf
           toolchain: nightly
           components: rust-src
-          default: true
       - uses: Swatinem/rust-cache@v2
-      - uses: actions-rs/cargo@v1
-        with:
-          command: check
-          args: -Zbuild-std=core --target=riscv32imc-unknown-none-elf --features=${{ matrix.chip }},panic-handler,exception-handler,${{ matrix.printer }}
+      - run: cargo check -Zbuild-std=core --target=riscv32imc-unknown-none-elf --features=${{ matrix.chip }},panic-handler,exception-handler,${{ matrix.printer }}
 
   check-xtensa:
     name: Check Xtensa
@@ -56,7 +51,4 @@ jobs:
           default: true
           ldproxy: false
       - uses: Swatinem/rust-cache@v2
-      - uses: actions-rs/cargo@v1
-        with:
-          command: check
-          args: -Zbuild-std=core --target=xtensa-${{ matrix.chip }}-none-elf --features=${{ matrix.chip }},panic-handler,exception-handler,${{ matrix.printer }}
+      - run: cargo check -Zbuild-std=core --target=xtensa-${{ matrix.chip }}-none-elf --features=${{ matrix.chip }},panic-handler,exception-handler,${{ matrix.printer }}

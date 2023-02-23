@@ -1,6 +1,6 @@
 # esp-backtrace - backtrace for ESP32 bare-metal
 
-Supports the ESP32, ESP32-C2, ESP32-C3, ESP32-S2, and ESP32-S3. Optional exception and panic handlers are included, both of which can be enabled via their respective features.
+Supports the ESP32, ESP32-C2/C3/C6, and ESP32-S2/S3. Optional exception and panic handlers are included, both of which can be enabled via their respective features.
 
 Please note that you **need** to force frame pointers (i.e. `"-C", "force-frame-pointers",` in your `.cargo/config.toml`)
 
@@ -19,6 +19,7 @@ When using this together with `esp-println` make sure to use the same output kin
 | esp32             | Target ESP32                                                         |
 | esp32c2           | Target ESP32-C2                                                      |
 | esp32c3           | Target ESP32-C3                                                      |
+| esp32c6           | Target ESP32-C6                                                      |
 | esp32s2           | Target ESP32-S2                                                      |
 | esp32s3           | Target ESP32-S3                                                      |
 | panic-handler     | Include a panic handler, will add `esp-println` as a dependency      |

@@ -26,6 +26,7 @@ jobs:
           - chip: esp32c6
             printer: "print-jtag-serial"
           - chip: esp32h2
+            printer: "print-jtag-serial"
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@v1

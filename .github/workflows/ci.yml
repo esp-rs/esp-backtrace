@@ -18,12 +18,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        chip: [esp32c2, esp32c3, esp32c6]
+        chip: [esp32c2, esp32c3, esp32c6, esp32h2]
         printer: ["print-rtt", "print-uart"]
         include:
           - chip: esp32c3
             printer: "print-jtag-serial"
           - chip: esp32c6
+            printer: "print-jtag-serial"
+          - chip: esp32h2
             printer: "print-jtag-serial"
     steps:
       - uses: actions/checkout@v3

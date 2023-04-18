@@ -21,6 +21,7 @@ esp32c3 = ["esp-println?/esp32c3"]
 esp32c6 = ["esp-println?/esp32c6"]
 esp32s2 = ["esp-println?/esp32s2"]
 esp32s3 = ["esp-println?/esp32s3"]
+esp32h2 = ["esp-println?/esp32h2"]
 
 # You must enable exactly one of the below features to enable the intended
 # communication method:

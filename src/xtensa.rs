@@ -276,7 +276,7 @@ pub(crate) fn backtrace_internal(
                 break;
             }
 
-            if !crate::is_valid_ram_address(fp) {
+            if !(crate::is_valid_ram_address(fp) || crate::is_valid_rtc_ram_address(fp)) {
                 break;
             }
 

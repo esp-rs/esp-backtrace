@@ -166,6 +166,51 @@ fn is_valid_ram_address(address: u32) -> bool {
     true
 }
 
+// Ensure that the address is in RTC DRAM and that it is 16-byte aligned.
+//
+// Address ranges can be found in `components/soc/$CHIP/include/soc/soc.h` as
+// `SOC_RTC_DRAM_LOW` and `SOC_RTC_DRAM_HIGH`.
+fn is_valid_rtc_ram_address(address: u32) -> bool {
+    if (address & 0xF) != 0 {
+        return false;
+    }
+
+    #[cfg(feature = "esp32")]
+    if !(0x3FF8_0000..=0x3FF8_2000).contains(&address) {
+        return false;
+    }
+
+    #[cfg(feature = "esp32c2")]
+    return false;
+
+    #[cfg(feature = "esp32c3")]
+    if !(0x5000_0000..=0x5000_2000).contains(&address) {
+        return false;
+    }
+
+    #[cfg(feature = "esp32c6")]
+    if !(0x5000_0000..=0x5000_4000).contains(&address) {
+        return false;
+    }
+
+    #[cfg(feature = "esp32h2")]
+    if !(0x5000_0000..=0x5000_1000).contains(&address) {
+        return false;
+    }
+
+    #[cfg(feature = "esp32s2")]
+    if !(0x3FF9_E000..=0x3FFA_0000).contains(&address) {
+        return false;
+    }
+
+    #[cfg(feature = "esp32s3")]
+    if !(0x600F_E000..=0x6010_0000).contains(&address) {
+        return false;
+    }
+
+    true
+}
+
 #[cfg(any(
     not(any(feature = "esp32", feature = "esp32s3")),
     not(feature = "halt-cores")

@@ -33,7 +33,10 @@ fn main() {
     // enabled, either the `esp32c3`, `esp32c6`, or `esp32s3` chip feature is
     // enabled.
     if cfg!(feature = "print-jtag-serial")
-        && !(cfg!(feature = "esp32c3") || cfg!(feature = "esp32c6") || cfg!(feature = "esp32s3") || cfg!(feature = "esp32h2"))
+        && !(cfg!(feature = "esp32c3")
+            || cfg!(feature = "esp32c6")
+            || cfg!(feature = "esp32s3")
+            || cfg!(feature = "esp32h2"))
     {
         panic!(
             "The `print-jtag-serial` feature is only supported by the ESP32-C3, ESP32-C6, ESP32-S3 and ESP32-H2 chips"

@@ -170,11 +170,13 @@ fn is_valid_ram_address(address: u32) -> bool {
     not(any(feature = "esp32", feature = "esp32s3")),
     not(feature = "halt-cores")
 ))]
+#[allow(unused)]
 fn halt() -> ! {
     loop {}
 }
 
 #[cfg(all(any(feature = "esp32", feature = "esp32s3"), feature = "halt-cores"))]
+#[allow(unused)]
 fn halt() -> ! {
     #[cfg(feature = "esp32")]
     mod registers {

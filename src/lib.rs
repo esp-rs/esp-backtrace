@@ -25,19 +25,9 @@ fn panic_handler(info: &core::panic::PanicInfo) -> ! {
     println!(" ");
     println!("{:#?}", info);
     println!(" ");
-    println!("Backtrace:");
-    println!(" ");
 
     let backtrace = crate::arch::backtrace();
-    #[cfg(target_arch = "riscv32")]
-    if backtrace.iter().filter(|e| e.is_some()).count() == 0 {
-        println!("No backtrace available - make sure to force frame-pointers. (see https://crates.io/crates/esp-backtrace)");
-    }
-    for e in backtrace {
-        if let Some(addr) = e {
-            println!("0x{:x}", addr);
-        }
-    }
+    print_backtrace(&backtrace);
 
     halt();
 }
@@ -52,15 +42,7 @@ unsafe fn __user_exception(cause: arch::ExceptionCause, context: arch::Context) 
     println!("{:?}", context);
 
     let backtrace = crate::arch::backtrace_internal(context.A1, 0);
-    for e in backtrace {
-        if let Some(addr) = e {
-            println!("0x{:x}", addr);
-        }
-    }
-
-    println!("");
-    println!("");
-    println!("");
+    print_backtrace(&backtrace);
 
     halt();
 }
@@ -100,9 +82,23 @@ fn exception_handler(context: &arch::TrapFrame) -> ! {
     println!("{:x?}", context);
 
     let backtrace = crate::arch::backtrace_internal(context.s0 as u32, 0);
+    print_backtrace(&backtrace);
+
+    halt();
+}
+
+#[cfg(any(feature = "exception-handler", feature = "panic-handler"))]
+fn print_backtrace(backtrace: &[Option<usize>; MAX_BACKTRACE_ADRESSES]) {
+    use esp_println::println;
+
+    println!("Backtrace:");
+    println!(" ");
+
+    #[cfg(target_arch = "riscv32")]
     if backtrace.iter().filter(|e| e.is_some()).count() == 0 {
         println!("No backtrace available - make sure to force frame-pointers. (see https://crates.io/crates/esp-backtrace)");
     }
+
     for e in backtrace {
         if let Some(addr) = e {
             println!("0x{:x}", addr);
@@ -112,8 +108,6 @@ fn exception_handler(context: &arch::TrapFrame) -> ! {
     println!("");
     println!("");
     println!("");
-
-    halt();
 }
 
 // Ensure that the address is in DRAM and that it is 16-byte aligned.

@@ -1,7 +1,7 @@
 #![no_std]
 #![cfg_attr(target_arch = "xtensa", feature(asm_experimental_arch))]
 
-const MAX_BACKTRACE_ADRESSES: usize = 10;
+const MAX_BACKTRACE_ADRESSES: usize = 100;
 
 #[cfg_attr(target_arch = "riscv32", path = "riscv.rs")]
 #[cfg_attr(target_arch = "xtensa", path = "xtensa.rs")]
@@ -12,22 +12,26 @@ pub mod arch;
 fn panic_handler(info: &core::panic::PanicInfo) -> ! {
     use esp_println::println;
 
-    println!(" ");
-    println!(" ");
+    println!("");
+    println!("");
 
     if let Some(location) = info.location() {
-        let (file, line, column) = (location.file(), location.line(), location.column());
-        println!("!! A panic occured in '{file}', at line {line}, column {column}");
+        println!(
+            "!! A panic occured in '{}', at line {}, column {}",
+            location.file(),
+            location.line(),
+            location.column()
+        );
     } else {
         println!("!! A panic occured at an unknown location");
     }
 
-    println!(" ");
+    println!("");
     println!("{:#?}", info);
-    println!(" ");
+    println!("");
 
     let backtrace = crate::arch::backtrace();
-    print_backtrace(&backtrace);
+    print_backtrace(backtrace);
 
     halt();
 }
@@ -41,8 +45,8 @@ unsafe fn __user_exception(cause: arch::ExceptionCause, context: arch::Context) 
     println!("\n\nException occured '{:?}'", cause);
     println!("{:?}", context);
 
-    let backtrace = crate::arch::backtrace_internal(context.A1, 0);
-    print_backtrace(&backtrace);
+    let backtrace = Backtrace::new(core::ptr::addr_of!(context) as u32, 0);
+    print_backtrace(backtrace);
 
     halt();
 }
@@ -81,28 +85,71 @@ fn exception_handler(context: &arch::TrapFrame) -> ! {
     );
     println!("{:x?}", context);
 
-    let backtrace = crate::arch::backtrace_internal(context.s0 as u32, 0);
-    print_backtrace(&backtrace);
+    let backtrace = Backtrace::new(core::ptr::addr_of!(context) as u32, 0);
+    print_backtrace(backtrace);
 
     halt();
 }
 
+#[derive(Clone, Copy)]
+pub struct Backtrace {
+    /// Frame pointer
+    fp: u32,
+
+    /// Depth counter to avoid looping on cyclic recursion.
+    depth: usize,
+}
+
+impl Backtrace {
+    #[inline(always)]
+    fn new(fp: u32, suppress: usize) -> Self {
+        let mut this = Backtrace { fp, depth: 0 };
+
+        // We need to skip the first few frames here, otherwise returning to the caller might cause
+        // problems.
+        for _ in 0..suppress {
+            this.next();
+        }
+
+        this.depth = 0;
+
+        this
+    }
+}
+
+impl Iterator for Backtrace {
+    type Item = usize;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.depth >= MAX_BACKTRACE_ADRESSES {
+            return None;
+        }
+
+        let address = self.read_next_pc()?;
+
+        if !crate::is_valid_ram_address(self.fp as u32) {
+            return None;
+        }
+
+        self.depth += 1;
+        Some(address as usize)
+    }
+}
+
 #[cfg(any(feature = "exception-handler", feature = "panic-handler"))]
-fn print_backtrace(backtrace: &[Option<usize>; MAX_BACKTRACE_ADRESSES]) {
+fn print_backtrace(backtrace: Backtrace) {
     use esp_println::println;
 
     println!("Backtrace:");
-    println!(" ");
+    println!("");
 
     #[cfg(target_arch = "riscv32")]
-    if backtrace.iter().filter(|e| e.is_some()).count() == 0 {
+    if backtrace.count() == 0 {
         println!("No backtrace available - make sure to force frame-pointers. (see https://crates.io/crates/esp-backtrace)");
     }
 
-    for e in backtrace {
-        if let Some(addr) = e {
-            println!("0x{:x}", addr);
-        }
+    for addr in backtrace {
+        println!("0x{:x}", addr);
     }
 
     println!("");

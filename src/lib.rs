@@ -166,9 +166,17 @@ fn is_valid_ram_address(address: u32) -> bool {
     true
 }
 
-#[cfg(any(
-    not(any(feature = "esp32", feature = "esp32s3")),
-    not(feature = "halt-cores")
+#[cfg(feature = "semihosting")]
+fn halt() -> ! {
+    semihosting::process::abort()
+}
+
+#[cfg(all(
+    not(feature = "semihosting"),
+    any(
+        not(any(feature = "esp32", feature = "esp32s3")),
+        not(feature = "halt-cores")
+    )
 ))]
 #[allow(unused)]
 fn halt() -> ! {

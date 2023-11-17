@@ -42,4 +42,12 @@ fn main() {
             "The `print-jtag-serial` feature is only supported by the ESP32-C3, ESP32-C6, ESP32-S3 and ESP32-H2 chips"
         );
     }
+
+    if cfg!(feature = "semihosting") && cfg!(feature = "halt-cores") {
+        panic!("The features semihosting + halt-cores are exclusive");
+    }
+
+    if cfg!(feature = "semihosting") && cfg!(target_arch = "xtensa") {
+        panic!("Semihosting is not supported on xtensa targets");
+    }
 }

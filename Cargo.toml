@@ -12,6 +12,7 @@ features = ["esp32c3", "panic-handler", "exception-handler", "print-uart"]
 
 [dependencies]
 esp-println = { version = "0.7.0", optional = true, default-features = false }
+semihosting = { version = "0.1.4", optional = true }
 
 [features]
 # You must enable exactly one of the below features to support the correct chip:
@@ -34,3 +35,4 @@ print-uart = ["esp-println/uart"]
 exception-handler = ["esp-println"]
 panic-handler = ["esp-println"]
 halt-cores = []
+semihosting = ["dep:semihosting"]

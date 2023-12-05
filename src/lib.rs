@@ -1,7 +1,10 @@
 #![no_std]
 #![cfg_attr(target_arch = "xtensa", feature(asm_experimental_arch))]
+#![feature(panic_info_message)]
 
-const MAX_BACKTRACE_ADDRESSES: usize = 10;
+use defmt as _;
+
+const MAX_BACKTRACE_ADRESSES: usize = 10;
 
 #[cfg(feature = "colors")]
 const RESET: &str = "\u{001B}[0m";
@@ -16,34 +19,62 @@ pub mod arch;
 #[panic_handler]
 fn panic_handler(info: &core::panic::PanicInfo) -> ! {
     use esp_println::println;
-
-    #[cfg(feature = "colors")]
-    println!("{}", RED);
-
-    println!(" ");
-    println!(" ");
+    
+    #[cfg(not(feature = "print-defmt"))]
+    {
+        #[cfg(feature = "colors")]
+        println!("{}", RED);
+        println!(" ");
+        println!(" ");
+    }
 
     if let Some(location) = info.location() {
         let (file, line, column) = (location.file(), location.line(), location.column());
+        #[cfg(not(feature = "print-defmt"))]
         println!("!! A panic occured in '{file}', at line {line}, column {column}");
+        #[cfg(feature = "print-defmt")]
+        defmt::error!("!! A panic occured in '{}', at line {}, column {}", file, line, column)
     } else {
+        #[cfg(not(feature = "print-defmt"))]
         println!("!! A panic occured at an unknown location");
+        #[cfg(feature = "print-defmt")]
+        defmt::error!("!! A panic occured at an unknown location")
     }
-
+    #[cfg(not(feature = "print-defmt"))]
     println!(" ");
+    #[cfg(not(feature = "print-defmt"))]
     println!("{:#?}", info);
+    #[cfg(feature = "print-defmt")]
+    { 
+        if let Some(args) = info.message() {
+            defmt::error!("Panic message: {:?}", defmt::Display2Format(args));
+        } else {
+            defmt::error!("Panic message is not available");
+        }
+    }
+    #[cfg(not(feature = "print-defmt"))]
     println!(" ");
+    #[cfg(not(feature = "print-defmt"))]
     println!("Backtrace:");
+    #[cfg(feature = "print-defmt")]
+    defmt::error!("Backtrace:");
+    #[cfg(not(feature = "print-defmt"))]
     println!(" ");
 
     let backtrace = crate::arch::backtrace();
     #[cfg(target_arch = "riscv32")]
     if backtrace.iter().filter(|e| e.is_some()).count() == 0 {
+        #[cfg(not(feature = "print-defmt"))]
         println!("No backtrace available - make sure to force frame-pointers. (see https://crates.io/crates/esp-backtrace)");
+        #[cfg(feature = "print-defmt")]
+        defmt::warn!("No backtrace available - make sure to force frame-pointers. (see https://crates.io/crates/esp-backtrace)");
     }
     for e in backtrace {
         if let Some(addr) = e {
+            #[cfg(not(feature = "print-defmt"))]
             println!("0x{:x}", addr);
+            #[cfg(feature = "print-defmt")]
+            defmt::error!("0x{:x}", addr);
         }
     }
 
@@ -59,25 +90,39 @@ fn panic_handler(info: &core::panic::PanicInfo) -> ! {
 unsafe fn __user_exception(cause: arch::ExceptionCause, context: arch::Context) {
     use esp_println::println;
 
-    #[cfg(feature = "colors")]
-    println!("{}", RED);
-
-    println!("\n\nException occured '{:?}'", cause);
-    println!("{:?}", context);
+    #[cfg(not(feature = "print-defmt"))]
+    {
+        #[cfg(feature = "colors")]
+        println!("{}", RED);
+        println!("\n\nException occured '{:?}'", cause);
+        println!("{:?}", context);
+    }
+    
+    #[cfg(feature = "print-defmt")]
+    {
+        defmt::error!("\n\nException occured '{}'", cause);
+        defmt::error!("{:?}", context);
+    }
 
     let backtrace = crate::arch::backtrace_internal(context.A1, 0);
     for e in backtrace {
         if let Some(addr) = e {
+            #[cfg(not(feature = "print-defmt"))]
             println!("0x{:x}", addr);
+            #[cfg(feature = "print-defmt")]
+            defmt::error!("0x{:x}", addr);
         }
     }
 
-    println!("");
-    println!("");
-    println!("");
-
-    #[cfg(feature = "colors")]
-    println!("{}", RESET);
+    #[cfg(not(feature = "print-defmt"))]
+    {    
+        println!("");
+        println!("");
+        println!("");
+        
+        #[cfg(feature = "colors")]
+        println!("{}", RESET);
+    }
 
     halt();
 }
@@ -91,16 +136,43 @@ fn exception_handler(context: &arch::TrapFrame) -> ! {
     let code = context.mcause & 0xff;
     let mtval = context.mtval;
 
-    #[cfg(feature = "colors")]
-    println!("{}", RED);
+    #[cfg(not(feature = "print-defmt"))]
+    {    
+        #[cfg(feature = "colors")]
+        println!("{}", RED);
+    }
+    #[cfg(not(feature = "print-defmt"))]
+    {   println!(
+            "Exception '{}' mepc=0x{:08x}, mtval=0x{:08x}",
+        );
+            code, mepc, mtval
+        println!("{:x?}", context);
+    }
+    #[cfg(feature = "print-defmt")]
+    { 
+        defmt::error!(
+            "Exception '{}' mepc=0x{:08x}, mtval=0x{:08x}",
+        );
+            code, mepc, mtval
+        defmt::error!("{:?}", context);
+    }
 
     if code == 14 {
-        println!();
-        println!(
+        #[cfg(not(feature = "print-defmt"))]
+        {  
+            println!();
+            println!(
+                "Stack overflow detected at 0x{:x} called by 0x{:x}",
+                mepc, context.ra
+            );
+            println!();
+        }
+        
+        #[cfg(feature = "print-defmt")]
+        defmt::error!(
             "Stack overflow detected at 0x{:x} called by 0x{:x}",
             mepc, context.ra
         );
-        println!();
     } else {
         let code = match code {
             0 => "Instruction address misaligned",
@@ -121,16 +193,12 @@ fn exception_handler(context: &arch::TrapFrame) -> ! {
             15 => "Store/AMO page fault",
             _ => "UNKNOWN",
         };
-
-        println!(
-            "Exception '{}' mepc=0x{:08x}, mtval=0x{:08x}",
-            code, mepc, mtval
-        );
-        println!("{:x?}", context);
-
         let backtrace = crate::arch::backtrace_internal(context.s0 as u32, 0);
         if backtrace.iter().filter(|e| e.is_some()).count() == 0 {
+            #[cfg(not(feature = "print-defmt"))]
             println!("No backtrace available - make sure to force frame-pointers. (see https://crates.io/crates/esp-backtrace)");
+            #[cfg(feature = "print-defmt")]
+            defmt::error!("No backtrace available - make sure to force frame-pointers. (see https://crates.io/crates/esp-backtrace)");
         }
         for e in backtrace {
             if let Some(addr) = e {

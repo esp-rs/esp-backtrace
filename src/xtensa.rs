@@ -1,9 +1,10 @@
 use crate::MAX_BACKTRACE_ADDRESSES;
 use core::arch::asm;
+use defmt::Format;
 
 #[doc(hidden)]
 #[allow(missing_docs)]
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Format)]
 #[repr(C)]
 pub enum ExceptionCause {
     /// Illegal Instruction
@@ -92,7 +93,7 @@ pub enum ExceptionCause {
 
 #[doc(hidden)]
 #[allow(missing_docs, non_snake_case)]
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Format)]
 #[repr(C)]
 pub struct Context {
     pub PC: u32,

@@ -1,6 +1,6 @@
 use core::arch::asm;
 
-use crate::MAX_BACKTRACE_ADRESSES;
+use crate::MAX_BACKTRACE_ADDRESSES;
 
 /// Registers saved in trap handler
 #[doc(hidden)]
@@ -104,7 +104,7 @@ MTVAL=0x{:08x}
 /// Get an array of backtrace addresses.
 ///
 /// This needs `force-frame-pointers` enabled.
-pub fn backtrace() -> [Option<usize>; MAX_BACKTRACE_ADRESSES] {
+pub fn backtrace() -> [Option<usize>; MAX_BACKTRACE_ADDRESSES] {
     let fp = unsafe {
         let mut _tmp: u32;
         asm!("mv {0}, x8", out(reg) _tmp);
@@ -117,7 +117,7 @@ pub fn backtrace() -> [Option<usize>; MAX_BACKTRACE_ADRESSES] {
 pub(crate) fn backtrace_internal(
     fp: u32,
     suppress: i32,
-) -> [Option<usize>; MAX_BACKTRACE_ADRESSES] {
+) -> [Option<usize>; MAX_BACKTRACE_ADDRESSES] {
     let mut result = [None; 10];
     let mut index = 0;
 
@@ -147,7 +147,7 @@ pub(crate) fn backtrace_internal(
                 result[index] = Some(address as usize);
                 index += 1;
 
-                if index >= MAX_BACKTRACE_ADRESSES {
+                if index >= MAX_BACKTRACE_ADDRESSES {
                     break;
                 }
             } else {

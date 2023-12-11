@@ -28,6 +28,7 @@ When using this together with `esp-println` make sure to use the same output kin
 | print-uart        | Use UART to print messages\*                                         |
 | print-jtag-serial | Use JTAG-Serial to print messages\*                                  |
 | print-rtt         | Use RTT to print messages\*                                          |
+| colors            | Print messages in red\*                                              |
 | halt-cores        | Halt both CPUs on ESP32 / ESP32-S3 in case of a panic or exception   |
 
 \* _only used for panic and exception handlers_

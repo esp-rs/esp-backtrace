@@ -1,4 +1,4 @@
-use crate::MAX_BACKTRACE_ADRESSES;
+use crate::MAX_BACKTRACE_ADDRESSES;
 use core::arch::asm;
 
 #[doc(hidden)]
@@ -236,7 +236,7 @@ F15=0x{:08x}
 
 /// Get an array of backtrace addresses.
 ///
-pub fn backtrace() -> [Option<usize>; MAX_BACKTRACE_ADRESSES] {
+pub fn backtrace() -> [Option<usize>; MAX_BACKTRACE_ADDRESSES] {
     let sp = unsafe {
         let mut _tmp: u32;
         asm!("mov {0}, a1", out(reg) _tmp);
@@ -253,7 +253,7 @@ pub(crate) fn sanitize_address(address: u32) -> u32 {
 pub(crate) fn backtrace_internal(
     sp: u32,
     suppress: i32,
-) -> [Option<usize>; MAX_BACKTRACE_ADRESSES] {
+) -> [Option<usize>; MAX_BACKTRACE_ADDRESSES] {
     let mut result = [None; 10];
     let mut index = 0;
 
@@ -288,7 +288,7 @@ pub(crate) fn backtrace_internal(
                 result[index] = Some(address as usize);
                 index += 1;
 
-                if index >= MAX_BACKTRACE_ADRESSES {
+                if index >= MAX_BACKTRACE_ADDRESSES {
                     break;
                 }
             } else {

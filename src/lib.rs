@@ -1,7 +1,12 @@
 #![no_std]
 #![cfg_attr(target_arch = "xtensa", feature(asm_experimental_arch))]
 
-const MAX_BACKTRACE_ADRESSES: usize = 10;
+const MAX_BACKTRACE_ADDRESSES: usize = 10;
+
+#[cfg(feature = "colors")]
+const RESET: &str = "\u{001B}[0m";
+#[cfg(feature = "colors")]
+const RED: &str = "\u{001B}[31m";
 
 #[cfg_attr(target_arch = "riscv32", path = "riscv.rs")]
 #[cfg_attr(target_arch = "xtensa", path = "xtensa.rs")]
@@ -11,6 +16,9 @@ pub mod arch;
 #[panic_handler]
 fn panic_handler(info: &core::panic::PanicInfo) -> ! {
     use esp_println::println;
+
+    #[cfg(feature = "colors")]
+    println!("{}", RED);
 
     println!(" ");
     println!(" ");
@@ -39,6 +47,9 @@ fn panic_handler(info: &core::panic::PanicInfo) -> ! {
         }
     }
 
+    #[cfg(feature = "colors")]
+    println!("{}", RESET);
+
     halt();
 }
 
@@ -47,6 +58,9 @@ fn panic_handler(info: &core::panic::PanicInfo) -> ! {
 #[link_section = ".rwtext"]
 unsafe fn __user_exception(cause: arch::ExceptionCause, context: arch::Context) {
     use esp_println::println;
+
+    #[cfg(feature = "colors")]
+    println!("{}", RED);
 
     println!("\n\nException occured '{:?}'", cause);
     println!("{:?}", context);
@@ -62,6 +76,9 @@ unsafe fn __user_exception(cause: arch::ExceptionCause, context: arch::Context) 
     println!("");
     println!("");
 
+    #[cfg(feature = "colors")]
+    println!("{}", RESET);
+
     halt();
 }
 
@@ -74,44 +91,60 @@ fn exception_handler(context: &arch::TrapFrame) -> ! {
     let code = context.mcause & 0xff;
     let mtval = context.mtval;
 
-    let code = match code {
-        0 => "Instruction address misaligned",
-        1 => "Instruction access fault",
-        2 => "Illegal instruction",
-        3 => "Breakpoint",
-        4 => "Load address misaligned",
-        5 => "Load access fault",
-        6 => "Store/AMO address misaligned",
-        7 => "Store/AMO access fault",
-        8 => "Environment call from U-mode",
-        9 => "Environment call from S-mode",
-        10 => "Reserved",
-        11 => "Environment call from M-mode",
-        12 => "Instruction page fault",
-        13 => "Load page fault",
-        14 => "Reserved",
-        15 => "Store/AMO page fault",
-        _ => "UNKNOWN",
-    };
-    println!(
-        "Exception '{}' mepc=0x{:08x}, mtval=0x{:08x}",
-        code, mepc, mtval
-    );
-    println!("{:x?}", context);
+    #[cfg(feature = "colors")]
+    println!("{}", RED);
 
-    let backtrace = crate::arch::backtrace_internal(context.s0 as u32, 0);
-    if backtrace.iter().filter(|e| e.is_some()).count() == 0 {
-        println!("No backtrace available - make sure to force frame-pointers. (see https://crates.io/crates/esp-backtrace)");
-    }
-    for e in backtrace {
-        if let Some(addr) = e {
-            println!("0x{:x}", addr);
+    if code == 14 {
+        println!();
+        println!(
+            "Stack overflow detected at 0x{:x} called by 0x{:x}",
+            mepc, context.ra
+        );
+        println!();
+    } else {
+        let code = match code {
+            0 => "Instruction address misaligned",
+            1 => "Instruction access fault",
+            2 => "Illegal instruction",
+            3 => "Breakpoint",
+            4 => "Load address misaligned",
+            5 => "Load access fault",
+            6 => "Store/AMO address misaligned",
+            7 => "Store/AMO access fault",
+            8 => "Environment call from U-mode",
+            9 => "Environment call from S-mode",
+            10 => "Reserved",
+            11 => "Environment call from M-mode",
+            12 => "Instruction page fault",
+            13 => "Load page fault",
+            14 => "Reserved",
+            15 => "Store/AMO page fault",
+            _ => "UNKNOWN",
+        };
+
+        println!(
+            "Exception '{}' mepc=0x{:08x}, mtval=0x{:08x}",
+            code, mepc, mtval
+        );
+        println!("{:x?}", context);
+
+        let backtrace = crate::arch::backtrace_internal(context.s0 as u32, 0);
+        if backtrace.iter().filter(|e| e.is_some()).count() == 0 {
+            println!("No backtrace available - make sure to force frame-pointers. (see https://crates.io/crates/esp-backtrace)");
+        }
+        for e in backtrace {
+            if let Some(addr) = e {
+                println!("0x{:x}", addr);
+            }
         }
     }
 
     println!("");
     println!("");
     println!("");
+
+    #[cfg(feature = "colors")]
+    println!("{}", RESET);
 
     halt();
 }

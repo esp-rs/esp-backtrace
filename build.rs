@@ -18,7 +18,6 @@ fn main() {
     // Ensure that only a single communication method is specified.
     let method_features = [
         cfg!(feature = "print-jtag-serial"),
-        cfg!(feature = "print-rtt"),
         cfg!(feature = "print-uart"),
     ];
 

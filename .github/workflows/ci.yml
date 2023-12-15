@@ -19,7 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         chip: [esp32c2, esp32c3, esp32c6, esp32h2]
-        printer: ["print-rtt", "print-uart"]
+        printer: ["print-uart"]
         include:
           - chip: esp32c3
             printer: "print-jtag-serial"
@@ -44,7 +44,7 @@ jobs:
       fail-fast: false
       matrix:
         chip: [esp32, esp32s2, esp32s3]
-        printer: ["print-rtt", "print-uart"]
+        printer: ["print-uart"]
         include:
           - chip: esp32s3
             printer: "print-jtag-serial"

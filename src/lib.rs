@@ -4,7 +4,7 @@
 
 use defmt as _;
 
-const MAX_BACKTRACE_ADRESSES: usize = 10;
+const MAX_BACKTRACE_ADDRESSES: usize = 10;
 
 #[cfg(feature = "colors")]
 const RESET: &str = "\u{001B}[0m";
@@ -18,6 +18,7 @@ pub mod arch;
 #[cfg(feature = "panic-handler")]
 #[panic_handler]
 fn panic_handler(info: &core::panic::PanicInfo) -> ! {
+    use defmt::println;
     use esp_println::println;
     
     #[cfg(not(feature = "print-defmt"))]
@@ -143,17 +144,15 @@ fn exception_handler(context: &arch::TrapFrame) -> ! {
     }
     #[cfg(not(feature = "print-defmt"))]
     {   println!(
-            "Exception '{}' mepc=0x{:08x}, mtval=0x{:08x}",
+            "Exception '{}' mepc=0x{:08x}, mtval=0x{:08x}", code, mepc, mtval
         );
-            code, mepc, mtval
         println!("{:x?}", context);
     }
     #[cfg(feature = "print-defmt")]
     { 
         defmt::error!(
-            "Exception '{}' mepc=0x{:08x}, mtval=0x{:08x}",
+            "Exception '{}' mepc=0x{:08x}, mtval=0x{:08x}", code, mepc, mtval
         );
-            code, mepc, mtval
         defmt::error!("{:?}", context);
     }
 
@@ -207,12 +206,16 @@ fn exception_handler(context: &arch::TrapFrame) -> ! {
         }
     }
 
-    println!("");
-    println!("");
-    println!("");
-
-    #[cfg(feature = "colors")]
-    println!("{}", RESET);
+    #[cfg(not(feature = "print-defmt"))]
+    {
+        println!("");
+        println!("");
+        println!("");
+        
+        #[cfg(feature = "colors")]
+        println!("{}", RESET);
+    }
+    
 
     halt();
 }

@@ -18,7 +18,6 @@ pub mod arch;
 #[cfg(feature = "panic-handler")]
 #[panic_handler]
 fn panic_handler(info: &core::panic::PanicInfo) -> ! {
-    use defmt::println;
     use esp_println::println;
     
     #[cfg(not(feature = "print-defmt"))]

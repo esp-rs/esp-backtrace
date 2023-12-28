@@ -28,7 +28,7 @@ esp32s3 = ["esp-println?/esp32s3"]
 
 # You must enable exactly one of the below features to enable the intended
 # communication method:
-print-jtag-serial = ["esp-println/jtag_serial"]
+print-jtag-serial = ["esp-println/jtag-serial"]
 print-uart = ["esp-println/uart"]
 
 # You may optionally enable one or more of the below features to provide

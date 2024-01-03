@@ -33,7 +33,7 @@ print-uart = ["esp-println/uart"]
 
 # You may optionally enable one or more of the below features to provide
 # additional functionality:
-print-defmt = ["esp-println?/defmt-espflash"]
+defmt-espflash = ["esp-println?/defmt-espflash"]
 exception-handler = ["esp-println"]
 panic-handler = ["esp-println"]
 halt-cores = []

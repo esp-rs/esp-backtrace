@@ -14,7 +14,7 @@ const RED: &str = "\u{001B}[31m";
 
 #[cfg(feature = "defmt-espflash")]
 macro_rules! println {
-    (" ") => {
+    ("") => {
         // Do nothing if the string is just a space
     };
     ($($arg:tt)*) => {
@@ -47,8 +47,8 @@ pub mod arch;
 fn panic_handler(info: &core::panic::PanicInfo) -> ! {
     set_color_code(RED);
 
-    println!(" ");
-    println!(" ");
+    println!("");
+    println!("");
 
     if let Some(location) = info.location() {
         let (file, line, column) = (location.file(), location.line(), location.column());
@@ -60,7 +60,7 @@ fn panic_handler(info: &core::panic::PanicInfo) -> ! {
         println!("!! A panic occured at an unknown location");
     }
 
-    println!(" ");
+    println!("");
 
     #[cfg(not(feature = "defmt-espflash"))]
     println!("{:#?}", info);
@@ -74,9 +74,9 @@ fn panic_handler(info: &core::panic::PanicInfo) -> ! {
         }
     }
 
-    println!(" ");
+    println!("");
     println!("Backtrace:");
-    println!(" ");
+    println!("");
 
     let backtrace = crate::arch::backtrace();
     #[cfg(target_arch = "riscv32")]
@@ -115,11 +115,11 @@ unsafe fn __user_exception(cause: arch::ExceptionCause, context: arch::Context) 
             println!("0x{:x}", addr);
         }
     }
-    println!(" ");
-    println!(" ");
-    println!(" ");
+    println!("");
+    println!("");
+    println!("");
 
-    set_color_code(RED);
+    set_color_code(RESET);
 
     halt();
 }
@@ -134,12 +134,12 @@ fn exception_handler(context: &arch::TrapFrame) -> ! {
     set_color_code(RED);
 
     if code == 14 {
-        println!(" ");
+        println!("");
         println!(
             "Stack overflow detected at 0x{:x} called by 0x{:x}",
             mepc, context.ra
         );
-        println!(" ");
+        println!("");
     } else {
         let code = match code {
             0 => "Instruction address misaligned",
@@ -170,7 +170,7 @@ fn exception_handler(context: &arch::TrapFrame) -> ! {
     
         #[cfg(feature = "defmt-espflash")]
         println!("{:?}", context);
-        
+
         let backtrace = crate::arch::backtrace_internal(context.s0 as u32, 0);
         if backtrace.iter().filter(|e| e.is_some()).count() == 0 {
             println!("No backtrace available - make sure to force frame-pointers. (see https://crates.io/crates/esp-backtrace)");
@@ -182,9 +182,9 @@ fn exception_handler(context: &arch::TrapFrame) -> ! {
         }
     }
 
-    println!(" ");
-    println!(" ");
-    println!(" ");
+    println!("");
+    println!("");
+    println!("");
 
     set_color_code(RESET);
 

@@ -1,5 +1,9 @@
 #![no_std]
 #![cfg_attr(target_arch = "xtensa", feature(asm_experimental_arch))]
+#![cfg_attr(feature = "defmt-espflash", feature(panic_info_message))]
+
+use defmt as _;
+use esp_println as _;
 
 const MAX_BACKTRACE_ADDRESSES: usize = 10;
 
@@ -8,6 +12,32 @@ const RESET: &str = "\u{001B}[0m";
 #[cfg(feature = "colors")]
 const RED: &str = "\u{001B}[31m";
 
+#[cfg(feature = "defmt-espflash")]
+macro_rules! println {
+    ("") => {
+        // Do nothing if the string is just a space
+    };
+    ($($arg:tt)*) => {
+        defmt::error!($($arg)*);
+    };
+}
+
+#[cfg(not(feature = "defmt-espflash"))]
+macro_rules! println {
+    ($($arg:tt)*) => {
+        esp_println::println!($($arg)*);
+    };
+}
+
+#[allow(unused_variables)]
+fn set_color_code(code: &str) {
+    #[cfg(not(feature = "defmt-espflash"))]
+    {
+        #[cfg(feature = "colors")]
+        println!("{}", code);
+    }
+}
+
 #[cfg_attr(target_arch = "riscv32", path = "riscv.rs")]
 #[cfg_attr(target_arch = "xtensa", path = "xtensa.rs")]
 pub mod arch;
@@ -15,26 +45,38 @@ pub mod arch;
 #[cfg(feature = "panic-handler")]
 #[panic_handler]
 fn panic_handler(info: &core::panic::PanicInfo) -> ! {
-    use esp_println::println;
+    set_color_code(RED);
 
-    #[cfg(feature = "colors")]
-    println!("{}", RED);
-
-    println!(" ");
-    println!(" ");
+    println!("");
+    println!("");
 
     if let Some(location) = info.location() {
         let (file, line, column) = (location.file(), location.line(), location.column());
-        println!("!! A panic occured in '{file}', at line {line}, column {column}");
+        println!(
+            "!! A panic occured in '{}', at line {}, column {}",
+            file, line, column
+        );
     } else {
         println!("!! A panic occured at an unknown location");
     }
 
-    println!(" ");
+    println!("");
+
+    #[cfg(not(feature = "defmt-espflash"))]
     println!("{:#?}", info);
-    println!(" ");
+
+    #[cfg(feature = "defmt-espflash")]
+    {
+        if let Some(args) = info.message() {
+            println!("Panic message: {:?}", defmt::Display2Format(args));
+        } else {
+            println!("Panic message is not available");
+        }
+    }
+
+    println!("");
     println!("Backtrace:");
-    println!(" ");
+    println!("");
 
     let backtrace = crate::arch::backtrace();
     #[cfg(target_arch = "riscv32")]
@@ -47,8 +89,7 @@ fn panic_handler(info: &core::panic::PanicInfo) -> ! {
         }
     }
 
-    #[cfg(feature = "colors")]
-    println!("{}", RESET);
+    set_color_code(RESET);
 
     halt();
 }
@@ -57,12 +98,15 @@ fn panic_handler(info: &core::panic::PanicInfo) -> ! {
 #[no_mangle]
 #[link_section = ".rwtext"]
 unsafe fn __user_exception(cause: arch::ExceptionCause, context: arch::Context) {
-    use esp_println::println;
+    set_color_code(RED);
 
-    #[cfg(feature = "colors")]
-    println!("{}", RED);
+    // Unfortunately, a different formatter string is used
+    #[cfg(not(feature = "defmt-espflash"))]
+    esp_println::println!("\n\nException occured '{:?}'", cause);
 
-    println!("\n\nException occured '{:?}'", cause);
+    #[cfg(feature = "defmt-espflash")]
+    defmt::error!("\n\nException occured '{}'", cause);
+
     println!("{:?}", context);
 
     let backtrace = crate::arch::backtrace_internal(context.A1, 0);
@@ -71,13 +115,11 @@ unsafe fn __user_exception(cause: arch::ExceptionCause, context: arch::Context) 
             println!("0x{:x}", addr);
         }
     }
-
     println!("");
     println!("");
     println!("");
 
-    #[cfg(feature = "colors")]
-    println!("{}", RESET);
+    set_color_code(RESET);
 
     halt();
 }
@@ -85,22 +127,19 @@ unsafe fn __user_exception(cause: arch::ExceptionCause, context: arch::Context) 
 #[cfg(all(feature = "exception-handler", target_arch = "riscv32"))]
 #[export_name = "ExceptionHandler"]
 fn exception_handler(context: &arch::TrapFrame) -> ! {
-    use esp_println::println;
-
     let mepc = context.pc;
     let code = context.mcause & 0xff;
     let mtval = context.mtval;
 
-    #[cfg(feature = "colors")]
-    println!("{}", RED);
+    set_color_code(RED);
 
     if code == 14 {
-        println!();
+        println!("");
         println!(
             "Stack overflow detected at 0x{:x} called by 0x{:x}",
             mepc, context.ra
         );
-        println!();
+        println!("");
     } else {
         let code = match code {
             0 => "Instruction address misaligned",
@@ -126,7 +165,11 @@ fn exception_handler(context: &arch::TrapFrame) -> ! {
             "Exception '{}' mepc=0x{:08x}, mtval=0x{:08x}",
             code, mepc, mtval
         );
+        #[cfg(not(feature = "defmt-espflash"))]
         println!("{:x?}", context);
+    
+        #[cfg(feature = "defmt-espflash")]
+        println!("{:?}", context);
 
         let backtrace = crate::arch::backtrace_internal(context.s0 as u32, 0);
         if backtrace.iter().filter(|e| e.is_some()).count() == 0 {
@@ -143,8 +186,7 @@ fn exception_handler(context: &arch::TrapFrame) -> ! {
     println!("");
     println!("");
 
-    #[cfg(feature = "colors")]
-    println!("{}", RESET);
+    set_color_code(RESET);
 
     halt();
 }

@@ -5,9 +5,10 @@ fn main() {
         cfg!(feature = "esp32c2"),
         cfg!(feature = "esp32c3"),
         cfg!(feature = "esp32c6"),
+        cfg!(feature = "esp32h2"),
+        cfg!(feature = "esp32p4"),
         cfg!(feature = "esp32s2"),
         cfg!(feature = "esp32s3"),
-        cfg!(feature = "esp32h2"),
     ];
 
     match chip_features.iter().filter(|&&f| f).count() {

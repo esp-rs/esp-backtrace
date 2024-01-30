@@ -28,7 +28,7 @@ jobs:
           toolchain: nightly
           components: rust-src
       - uses: Swatinem/rust-cache@v2
-      - run: cargo check -Zbuild-std=core --target=riscv32imc-unknown-none-elf --features=${{ matrix.chip }},panic-handler,exception-handler,${{ matrix.printer }}
+      - run: cargo check -Zbuild-std=core --target=riscv32imc-unknown-none-elf --features=${{ matrix.chip }},panic-handler,exception-handler,println,${{ matrix.printer }}
 
   check-xtensa:
     name: Check Xtensa
@@ -45,4 +45,4 @@ jobs:
           default: true
           ldproxy: false
       - uses: Swatinem/rust-cache@v2
-      - run: cargo check -Zbuild-std=core --target=xtensa-${{ matrix.chip }}-none-elf --features=${{ matrix.chip }},panic-handler,exception-handler,${{ matrix.printer }}
+      - run: cargo check -Zbuild-std=core --target=xtensa-${{ matrix.chip }}-none-elf --features=${{ matrix.chip }},panic-handler,exception-handler,println,${{ matrix.printer }}

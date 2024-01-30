@@ -9,9 +9,6 @@ you want to create a backtrace yourself (i.e. not using the panic or exception h
 
 When using the panic and/or exception handler make sure to include `use esp_backtrace as _;`.
 
-When using this together with `esp-println` make sure to use the same output kind for both dependencies.
-(Or don't specify the output for `esp-backtrace`)
-
 ## Features
 
 | Feature           | Description                                                          |
@@ -25,9 +22,7 @@ When using this together with `esp-println` make sure to use the same output kin
 | esp32h2           | Target ESP32-H2                                                      |
 | panic-handler     | Include a panic handler, will add `esp-println` as a dependency      |
 | exception-handler | Include an exception handler, will add `esp-println` as a dependency |
-| print-uart        | Use UART to print messages\*                                         |
-| print-jtag-serial | Use JTAG-Serial to print messages\*                                  |
-| defmt-espflash    | Use `defmt` logging to print messages\* (check [example](https://github.com/playfulFence/backtrace-defmt-example))                    |
+| defmt             | Use `defmt` logging to print messages\* (check [example](https://github.com/playfulFence/backtrace-defmt-example))                    |
 | colors            | Print messages in red\*                                              |
 | halt-cores        | Halt both CPUs on ESP32 / ESP32-S3 in case of a panic or exception   |
 

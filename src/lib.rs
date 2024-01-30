@@ -1,7 +1,11 @@
 #![no_std]
 #![cfg_attr(target_arch = "xtensa", feature(asm_experimental_arch))]
-#![cfg_attr(feature = "defmt-espflash", feature(panic_info_message))]
+#![cfg_attr(feature = "defmt", feature(panic_info_message))]
+#![allow(rustdoc::bare_urls)]
+#![doc = include_str!("../README.md")]
+#![doc(html_logo_url = "https://avatars.githubusercontent.com/u/46717278")]
 
+#[cfg(feature = "defmt")]
 use defmt as _;
 use esp_println as _;
 
@@ -12,7 +16,7 @@ const RESET: &str = "\u{001B}[0m";
 #[cfg(feature = "colors")]
 const RED: &str = "\u{001B}[31m";
 
-#[cfg(feature = "defmt-espflash")]
+#[cfg(feature = "defmt")]
 macro_rules! println {
     ("") => {
         // Do nothing if the string is just a space
@@ -22,18 +26,17 @@ macro_rules! println {
     };
 }
 
-#[cfg(not(feature = "defmt-espflash"))]
+#[cfg(not(feature = "defmt"))]
 macro_rules! println {
     ($($arg:tt)*) => {
         esp_println::println!($($arg)*);
     };
 }
 
-#[allow(unused_variables)]
+#[allow(unused, unused_variables)]
 fn set_color_code(code: &str) {
-    #[cfg(not(feature = "defmt-espflash"))]
+    #[cfg(not(feature = "defmt"))]
     {
-        #[cfg(feature = "colors")]
         println!("{}", code);
     }
 }
@@ -45,6 +48,7 @@ pub mod arch;
 #[cfg(feature = "panic-handler")]
 #[panic_handler]
 fn panic_handler(info: &core::panic::PanicInfo) -> ! {
+    #[cfg(feature = "colors")]
     set_color_code(RED);
 
     println!("");
@@ -62,10 +66,10 @@ fn panic_handler(info: &core::panic::PanicInfo) -> ! {
 
     println!("");
 
-    #[cfg(not(feature = "defmt-espflash"))]
+    #[cfg(not(feature = "defmt"))]
     println!("{:#?}", info);
 
-    #[cfg(feature = "defmt-espflash")]
+    #[cfg(feature = "defmt")]
     {
         if let Some(args) = info.message() {
             println!("Panic message: {:?}", defmt::Display2Format(args));
@@ -89,6 +93,7 @@ fn panic_handler(info: &core::panic::PanicInfo) -> ! {
         }
     }
 
+    #[cfg(feature = "colors")]
     set_color_code(RESET);
 
     halt();
@@ -98,13 +103,14 @@ fn panic_handler(info: &core::panic::PanicInfo) -> ! {
 #[no_mangle]
 #[link_section = ".rwtext"]
 unsafe fn __user_exception(cause: arch::ExceptionCause, context: arch::Context) {
+    #[cfg(feature = "colors")]
     set_color_code(RED);
 
     // Unfortunately, a different formatter string is used
-    #[cfg(not(feature = "defmt-espflash"))]
+    #[cfg(not(feature = "defmt"))]
     esp_println::println!("\n\nException occured '{:?}'", cause);
 
-    #[cfg(feature = "defmt-espflash")]
+    #[cfg(feature = "defmt")]
     defmt::error!("\n\nException occured '{}'", cause);
 
     println!("{:?}", context);
@@ -119,6 +125,7 @@ unsafe fn __user_exception(cause: arch::ExceptionCause, context: arch::Context) 
     println!("");
     println!("");
 
+    #[cfg(feature = "colors")]
     set_color_code(RESET);
 
     halt();
@@ -131,6 +138,7 @@ fn exception_handler(context: &arch::TrapFrame) -> ! {
     let code = context.mcause & 0xff;
     let mtval = context.mtval;
 
+    #[cfg(feature = "colors")]
     set_color_code(RED);
 
     if code == 14 {
@@ -165,10 +173,10 @@ fn exception_handler(context: &arch::TrapFrame) -> ! {
             "Exception '{}' mepc=0x{:08x}, mtval=0x{:08x}",
             code, mepc, mtval
         );
-        #[cfg(not(feature = "defmt-espflash"))]
+        #[cfg(not(feature = "defmt"))]
         println!("{:x?}", context);
-    
-        #[cfg(feature = "defmt-espflash")]
+
+        #[cfg(feature = "defmt")]
         println!("{:?}", context);
 
         let backtrace = crate::arch::backtrace_internal(context.s0 as u32, 0);
@@ -186,6 +194,7 @@ fn exception_handler(context: &arch::TrapFrame) -> ! {
     println!("");
     println!("");
 
+    #[cfg(feature = "colors")]
     set_color_code(RESET);
 
     halt();

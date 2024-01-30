@@ -19,14 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         chip: [esp32c2, esp32c3, esp32c6, esp32h2]
-        printer: ["print-uart"]
-        include:
-          - chip: esp32c3
-            printer: "print-jtag-serial"
-          - chip: esp32c6
-            printer: "print-jtag-serial"
-          - chip: esp32h2
-            printer: "print-jtag-serial"
+        printer: ["esp-println/uart"]
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@v1
@@ -35,7 +28,7 @@ jobs:
           toolchain: nightly
           components: rust-src
       - uses: Swatinem/rust-cache@v2
-      - run: cargo check -Zbuild-std=core --target=riscv32imc-unknown-none-elf --features=${{ matrix.chip }},panic-handler,exception-handler,${{ matrix.printer }}
+      - run: cargo check -Zbuild-std=core --target=riscv32imc-unknown-none-elf --features=${{ matrix.chip }},panic-handler,exception-handler,println,${{ matrix.printer }}
 
   check-xtensa:
     name: Check Xtensa
@@ -44,10 +37,7 @@ jobs:
       fail-fast: false
       matrix:
         chip: [esp32, esp32s2, esp32s3]
-        printer: ["print-uart"]
-        include:
-          - chip: esp32s3
-            printer: "print-jtag-serial"
+        printer: ["esp-println/uart"]
     steps:
       - uses: actions/checkout@v3
       - uses: esp-rs/xtensa-toolchain@v1.5
@@ -55,4 +45,4 @@ jobs:
           default: true
           ldproxy: false
       - uses: Swatinem/rust-cache@v2
-      - run: cargo check -Zbuild-std=core --target=xtensa-${{ matrix.chip }}-none-elf --features=${{ matrix.chip }},panic-handler,exception-handler,${{ matrix.printer }}
+      - run: cargo check -Zbuild-std=core --target=xtensa-${{ matrix.chip }}-none-elf --features=${{ matrix.chip }},panic-handler,exception-handler,println,${{ matrix.printer }}

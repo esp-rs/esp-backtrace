@@ -1,12 +1,11 @@
-use core::arch::asm;
-use defmt::Format;
-
 use crate::MAX_BACKTRACE_ADDRESSES;
+use core::arch::asm;
 
 /// Registers saved in trap handler
 #[doc(hidden)]
 #[allow(missing_docs)]
-#[derive(Default, Clone, Copy, Format)]
+#[derive(Default, Clone, Copy)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 #[repr(C)]
 pub(crate) struct TrapFrame {
     pub ra: usize,

@@ -19,7 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         chip: [esp32c2, esp32c3, esp32c6, esp32h2]
-        printer: ["esp-println/print-uart"]
+        printer: ["esp-println/uart"]
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@v1
@@ -37,7 +37,7 @@ jobs:
       fail-fast: false
       matrix:
         chip: [esp32, esp32s2, esp32s3]
-        printer: ["esp-println/print-uart"]
+        printer: ["esp-println/uart"]
     steps:
       - uses: actions/checkout@v3
       - uses: esp-rs/xtensa-toolchain@v1.5

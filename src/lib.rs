@@ -1,12 +1,12 @@
 #![no_std]
 #![cfg_attr(target_arch = "xtensa", feature(asm_experimental_arch))]
-#![cfg_attr(feature = "defmt", feature(panic_info_message))]
 #![allow(rustdoc::bare_urls)]
 #![doc = include_str!("../README.md")]
 #![doc(html_logo_url = "https://avatars.githubusercontent.com/u/46717278")]
 
 #[cfg(feature = "defmt")]
 use defmt as _;
+#[cfg(feature = "println")]
 use esp_println as _;
 
 const MAX_BACKTRACE_ADDRESSES: usize = 10;
@@ -26,7 +26,7 @@ macro_rules! println {
     };
 }
 
-#[cfg(not(feature = "defmt"))]
+#[cfg(all(feature = "println", not(feature = "defmt")))]
 macro_rules! println {
     ($($arg:tt)*) => {
         esp_println::println!($($arg)*);
@@ -35,7 +35,7 @@ macro_rules! println {
 
 #[allow(unused, unused_variables)]
 fn set_color_code(code: &str) {
-    #[cfg(not(feature = "defmt"))]
+    #[cfg(feature = "println")]
     {
         println!("{}", code);
     }
@@ -70,13 +70,7 @@ fn panic_handler(info: &core::panic::PanicInfo) -> ! {
     println!("{:#?}", info);
 
     #[cfg(feature = "defmt")]
-    {
-        if let Some(args) = info.message() {
-            println!("Panic message: {:?}", defmt::Display2Format(args));
-        } else {
-            println!("Panic message is not available");
-        }
-    }
+    println!("{:#?}", defmt::Display2Format(info));
 
     println!("");
     println!("Backtrace:");

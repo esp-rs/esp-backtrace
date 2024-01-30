@@ -14,4 +14,11 @@ fn main() {
         1 => {}
         n => panic!("Exactly 1 chip must be enabled via its Cargo feature, {n} provided"),
     };
+
+    // Ensure that exactly a backend is selected
+    let backend = [cfg!(feature = "println"), cfg!(feature = "defmt")];
+
+    if backend.iter().filter(|&&f| f).count() == 0 {
+        panic!("A backend needs to be selected");
+    }
 }

@@ -22,6 +22,7 @@ When using the panic and/or exception handler make sure to include `use esp_back
 | esp32h2           | Target ESP32-H2                                                      |
 | panic-handler     | Include a panic handler, will add `esp-println` as a dependency      |
 | exception-handler | Include an exception handler, will add `esp-println` as a dependency |
+| println           | Use `esp-println` to print messages                                  |
 | defmt             | Use `defmt` logging to print messages\* (check [example](https://github.com/playfulFence/backtrace-defmt-example))                    |
 | colors            | Print messages in red\*                                              |
 | halt-cores        | Halt both CPUs on ESP32 / ESP32-S3 in case of a panic or exception   |

@@ -1,6 +1,5 @@
-use core::arch::asm;
-
 use crate::MAX_BACKTRACE_ADDRESSES;
+use core::arch::asm;
 
 /// Registers saved in trap handler
 #[doc(hidden)]

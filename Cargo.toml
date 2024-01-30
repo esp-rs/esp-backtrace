@@ -26,10 +26,15 @@ esp32h2 = ["esp-println?/esp32h2"]
 esp32s2 = ["esp-println?/esp32s2"]
 esp32s3 = ["esp-println?/esp32s3"]
 
+# Use esp-println
+println = [ "dep:esp-println" ]
+
+# Use defmt
+defmt = [ "dep:defmt" ]
+
 # You may optionally enable one or more of the below features to provide
 # additional functionality:
-defmt = [ "dep:defmt" ]
-exception-handler = ["dep:esp-println"]
-panic-handler = ["dep:esp-println"]
+exception-handler = []
+panic-handler = []
 halt-cores = []
 colors = []

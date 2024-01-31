@@ -1,6 +1,12 @@
 use crate::MAX_BACKTRACE_ADDRESSES;
 use core::arch::asm;
 
+// subtract 3 from the return address
+// the return address is the address following the callxN
+// we get better results (especially if the caller was the last function in the calling function)
+// if we report the address of callxN itself
+pub(super) const RA_OFFSET: usize = 3;
+
 #[doc(hidden)]
 #[allow(missing_docs)]
 #[derive(Debug, Clone, Copy)]

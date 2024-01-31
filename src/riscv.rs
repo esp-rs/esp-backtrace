@@ -1,6 +1,13 @@
 use crate::MAX_BACKTRACE_ADDRESSES;
 use core::arch::asm;
 
+// subtract 4 from the return address
+// the return address is the address following the JALR
+// we get better results (especially if the caller was the last function in the calling function)
+// if we report the address of the JALR itself
+// even if it was a C.JALR we should get good results using RA - 4
+pub(super) const RA_OFFSET: usize = 4;
+
 /// Registers saved in trap handler
 #[doc(hidden)]
 #[allow(missing_docs)]

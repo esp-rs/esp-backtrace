@@ -83,7 +83,7 @@ fn panic_handler(info: &core::panic::PanicInfo) -> ! {
     }
     for e in backtrace {
         if let Some(addr) = e {
-            println!("0x{:x}", addr);
+            println!("0x{:x}", addr - crate::arch::RA_OFFSET);
         }
     }
 

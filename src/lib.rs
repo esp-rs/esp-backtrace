@@ -226,6 +226,16 @@ fn is_valid_ram_address(address: u32) -> bool {
         return false;
     }
 
+    #[cfg(feature = "esp32h2")]
+    if !(0x4080_0000..=0x4085_0000).contains(&address) {
+        return false;
+    }
+
+    #[cfg(feature = "esp32p4")]
+    if !(0x4FF0_0000..=0x4FFC_0000).contains(&address) {
+        return false;
+    }
+
     #[cfg(feature = "esp32s2")]
     if !(0x3FFB_0000..=0x4000_0000).contains(&address) {
         return false;
@@ -236,16 +246,11 @@ fn is_valid_ram_address(address: u32) -> bool {
         return false;
     }
 
-    #[cfg(feature = "esp32h2")]
-    if !(0x4080_0000..=0x4085_0000).contains(&address) {
-        return false;
-    }
-
     true
 }
 
 #[cfg(any(
-    not(any(feature = "esp32", feature = "esp32s3")),
+    not(any(feature = "esp32", feature = "esp32p4", feature = "esp32s3")),
     not(feature = "halt-cores")
 ))]
 #[allow(unused)]
@@ -253,31 +258,48 @@ fn halt() -> ! {
     loop {}
 }
 
+// TODO: Enable `halt` function for `esp32p4` feature once implemented
 #[cfg(all(any(feature = "esp32", feature = "esp32s3"), feature = "halt-cores"))]
 #[allow(unused)]
 fn halt() -> ! {
     #[cfg(feature = "esp32")]
     mod registers {
-        pub(crate) const SW_CPU_STALL: u32 = 0x3ff480ac;
         pub(crate) const OPTIONS0: u32 = 0x3ff48000;
+        pub(crate) const SW_CPU_STALL: u32 = 0x3ff480ac;
+    }
+
+    #[cfg(feature = "esp32p4")]
+    mod registers {
+        pub(crate) const SW_CPU_STALL: u32 = 0x50115200;
     }
 
     #[cfg(feature = "esp32s3")]
     mod registers {
-        pub(crate) const SW_CPU_STALL: u32 = 0x600080bc;
         pub(crate) const OPTIONS0: u32 = 0x60008000;
+        pub(crate) const SW_CPU_STALL: u32 = 0x600080bc;
     }
 
     let sw_cpu_stall = registers::SW_CPU_STALL as *mut u32;
-    let options0 = registers::OPTIONS0 as *mut u32;
 
+    #[cfg(feature = "esp32p4")]
+    unsafe {}
+
+    #[cfg(not(feature = "esp32p4"))]
     unsafe {
+        // We need to write the value "0x86" to stall a particular core. The write
+        // location is split into two separate bit fields named "c0" and "c1", and the
+        // two fields are located in different registers. Each core has its own pair of
+        // "c0" and "c1" bit fields.
+
+        let options0 = registers::OPTIONS0 as *mut u32;
+
+        options0.write_volatile(options0.read_volatile() & !(0b1111) | 0b1010);
+
         sw_cpu_stall.write_volatile(
             sw_cpu_stall.read_volatile() & !(0b111111 << 20) & !(0b111111 << 26)
                 | (0x21 << 20)
                 | (0x21 << 26),
         );
-        options0.write_volatile(options0.read_volatile() & !(0b1111) | 0b1010);
     }
 
     loop {}

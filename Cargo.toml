@@ -23,6 +23,7 @@ esp32c2 = ["esp-println?/esp32c2"]
 esp32c3 = ["esp-println?/esp32c3"]
 esp32c6 = ["esp-println?/esp32c6"]
 esp32h2 = ["esp-println?/esp32h2"]
+esp32p4 = ["esp-println?/esp32p4"]
 esp32s2 = ["esp-println?/esp32s2"]
 esp32s3 = ["esp-println?/esp32s3"]
 
@@ -38,3 +39,6 @@ exception-handler = []
 panic-handler = []
 halt-cores = []
 colors = []
+
+[patch.crates-io]
+esp-println = { git = "https://github.com/esp-rs/esp-println/", rev = "1f628e3" }

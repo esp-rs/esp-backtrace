@@ -3,6 +3,7 @@
 #![allow(rustdoc::bare_urls)]
 #![doc = include_str!("../README.md")]
 #![doc(html_logo_url = "https://avatars.githubusercontent.com/u/46717278")]
+#![cfg_attr(nightly, feature(panic_info_message))]
 
 #[cfg(feature = "defmt")]
 use defmt as _;
@@ -57,20 +58,28 @@ fn panic_handler(info: &core::panic::PanicInfo) -> ! {
     if let Some(location) = info.location() {
         let (file, line, column) = (location.file(), location.line(), location.column());
         println!(
-            "!! A panic occured in '{}', at line {}, column {}",
+            "!! A panic occured in '{}', at line {}, column {}:",
             file, line, column
         );
     } else {
-        println!("!! A panic occured at an unknown location");
+        println!("!! A panic occured at an unknown location:");
     }
 
-    println!("");
+    #[cfg(not(nightly))]
+    {
+        #[cfg(not(feature = "defmt"))]
+        println!("{:#?}", info);
 
-    #[cfg(not(feature = "defmt"))]
-    println!("{:#?}", info);
+        #[cfg(feature = "defmt")]
+        println!("{:#?}", defmt::Display2Format(info));
+    }
 
-    #[cfg(feature = "defmt")]
-    println!("{:#?}", defmt::Display2Format(info));
+    #[cfg(nightly)]
+    {
+        if let Some(message) = info.message() {
+            println!("{}", message);
+        }
+    }
 
     println!("");
     println!("Backtrace:");
@@ -83,6 +92,10 @@ fn panic_handler(info: &core::panic::PanicInfo) -> ! {
     }
     for e in backtrace {
         if let Some(addr) = e {
+            #[cfg(all(feature = "colors", feature = "println"))]
+            println!("{}0x{:x}", RED, addr - crate::arch::RA_OFFSET);
+
+            #[cfg(not(any(feature = "colors", feature = "println")))]
             println!("0x{:x}", addr - crate::arch::RA_OFFSET);
         }
     }

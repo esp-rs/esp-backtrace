@@ -22,4 +22,21 @@ fn main() {
     if backend.iter().filter(|&&f| f).count() == 0 {
         panic!("A backend needs to be selected");
     }
+
+    if is_nightly() {
+        println!("cargo:rustc-cfg=nightly");
+    }
+}
+
+fn is_nightly() -> bool {
+    let version_output = std::process::Command::new(
+        std::env::var_os("RUSTC").unwrap_or_else(|| std::ffi::OsString::from("rustc")),
+    )
+    .arg("-V")
+    .output()
+    .unwrap()
+    .stdout;
+    let version_string = String::from_utf8_lossy(&version_output);
+
+    version_string.contains("nightly")
 }

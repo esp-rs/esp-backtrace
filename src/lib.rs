@@ -77,7 +77,11 @@ fn panic_handler(info: &core::panic::PanicInfo) -> ! {
     #[cfg(nightly)]
     {
         if let Some(message) = info.message() {
+            #[cfg(not(feature = "defmt"))]
             println!("{}", message);
+
+            #[cfg(feature = "defmt")]
+            println!("{}", defmt::Display2Format(message));
         }
     }
 
@@ -95,7 +99,7 @@ fn panic_handler(info: &core::panic::PanicInfo) -> ! {
             #[cfg(all(feature = "colors", feature = "println"))]
             println!("{}0x{:x}", RED, addr - crate::arch::RA_OFFSET);
 
-            #[cfg(not(any(feature = "colors", feature = "println")))]
+            #[cfg(not(all(feature = "colors", feature = "println")))]
             println!("0x{:x}", addr - crate::arch::RA_OFFSET);
         }
     }
@@ -192,7 +196,11 @@ fn exception_handler(context: &arch::TrapFrame) -> ! {
         }
         for e in backtrace {
             if let Some(addr) = e {
-                println!("0x{:x}", addr);
+                #[cfg(all(feature = "colors", feature = "println"))]
+                println!("{}0x{:x}", RED, addr - crate::arch::RA_OFFSET);
+    
+                #[cfg(not(all(feature = "colors", feature = "println")))]
+                println!("0x{:x}", addr - crate::arch::RA_OFFSET);
             }
         }
     }

@@ -15,11 +15,14 @@ jobs:
   check-riscv:
     name: Check RISC-V
     runs-on: ubuntu-latest
+    env:
+      RUSTFLAGS: -Dwarnings
     strategy:
       fail-fast: false
       matrix:
         chip: [esp32c2, esp32c3, esp32c6, esp32h2, esp32p4]
-        printer: ["esp-println/uart"]
+        colors: ["colors"]
+        method: ["println"]
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@v1
@@ -28,16 +31,19 @@ jobs:
           toolchain: nightly
           components: rust-src
       - uses: Swatinem/rust-cache@v2
-      - run: cargo check -Zbuild-std=core --target=riscv32imc-unknown-none-elf --features=${{ matrix.chip }},panic-handler,exception-handler,println,${{ matrix.printer }}
+      - run: cargo check -Zbuild-std=core --target=riscv32imc-unknown-none-elf --no-default-features --features=esp-println/uart,${{ matrix.chip }},panic-handler,exception-handler,${{ matrix.method }},${{ matrix.colors }}
 
   check-xtensa:
     name: Check Xtensa
     runs-on: ubuntu-latest
+    env:
+      RUSTFLAGS: -Dwarnings
     strategy:
       fail-fast: false
       matrix:
         chip: [esp32, esp32s2, esp32s3]
-        printer: ["esp-println/uart"]
+        colors: ["colors"]
+        method: ["println"]
     steps:
       - uses: actions/checkout@v3
       - uses: esp-rs/xtensa-toolchain@v1.5
@@ -45,4 +51,25 @@ jobs:
           default: true
           ldproxy: false
       - uses: Swatinem/rust-cache@v2
-      - run: cargo check -Zbuild-std=core --target=xtensa-${{ matrix.chip }}-none-elf --features=${{ matrix.chip }},panic-handler,exception-handler,println,${{ matrix.printer }}
+      - run: cargo check -Zbuild-std=core --target=xtensa-${{ matrix.chip }}-none-elf --no-default-features --features=esp-println/uart,${{ matrix.chip }},panic-handler,exception-handler,${{ matrix.method }},${{ matrix.colors }}
+
+  check-features:
+    name: Check unusual feature combinations
+    runs-on: ubuntu-latest
+    env:
+      RUSTFLAGS: -Dwarnings
+    strategy:
+      fail-fast: false
+      matrix:
+        chip: [esp32c3]
+        colors: ["colors", ""]
+        method: ["println","defmt"]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@v1
+        with:
+          target: riscv32imc-unknown-none-elf
+          toolchain: nightly
+          components: rust-src
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo check -Zbuild-std=core --target=riscv32imc-unknown-none-elf --no-default-features --features=esp-println/uart,${{ matrix.chip }},panic-handler,exception-handler,${{ matrix.method }},${{ matrix.colors }}

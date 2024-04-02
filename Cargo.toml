@@ -13,19 +13,20 @@ features = ["esp32c3", "panic-handler", "exception-handler", "println", "esp-pri
 [dependencies]
 esp-println = { version = "0.9.1", optional = true, default-features = false }
 defmt = { version = "0.3.6", optional = true }
+semihosting = { version = "0.1.7", optional = true }
 
 [features]
 default = [ "colors" ]
 
 # You must enable exactly one of the below features to support the correct chip:
-esp32 = ["esp-println?/esp32"]
+esp32 = ["esp-println?/esp32", "semihosting?/openocd-semihosting"]
 esp32c2 = ["esp-println?/esp32c2"]
 esp32c3 = ["esp-println?/esp32c3"]
 esp32c6 = ["esp-println?/esp32c6"]
 esp32h2 = ["esp-println?/esp32h2"]
 esp32p4 = ["esp-println?/esp32p4"]
-esp32s2 = ["esp-println?/esp32s2"]
-esp32s3 = ["esp-println?/esp32s3"]
+esp32s2 = ["esp-println?/esp32s2", "semihosting?/openocd-semihosting"]
+esp32s3 = ["esp-println?/esp32s3", "semihosting?/openocd-semihosting"]
 
 # Use esp-println
 println = [ "dep:esp-println" ]

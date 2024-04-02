@@ -27,6 +27,7 @@ When using the panic and/or exception handler make sure to include `use esp_back
 | defmt             | Use `defmt` logging to print messages\* (check [example](https://github.com/playfulFence/backtrace-defmt-example)) |
 | colors            | Print messages in red\*                                                                                            |
 | halt-cores        | Halt both CPUs on ESP32 / ESP32-S3 in case of a panic or exception                                                 |
+| semihosting       | Call `semihosting::process::abort()` on panic.                                                                     |
 
 \* _only used for panic and exception handlers_
 

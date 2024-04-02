@@ -107,6 +107,9 @@ fn panic_handler(info: &core::panic::PanicInfo) -> ! {
     #[cfg(feature = "colors")]
     set_color_code(RESET);
 
+    #[cfg(feature = "semihosting")]
+    semihosting::process::abort();
+
     halt();
 }
 
@@ -138,6 +141,9 @@ unsafe fn __user_exception(cause: arch::ExceptionCause, context: arch::Context) 
 
     #[cfg(feature = "colors")]
     set_color_code(RESET);
+
+    #[cfg(feature = "semihosting")]
+    semihosting::process::abort();
 
     halt();
 }
@@ -211,6 +217,9 @@ fn exception_handler(context: &arch::TrapFrame) -> ! {
 
     #[cfg(feature = "colors")]
     set_color_code(RESET);
+
+    #[cfg(feature = "semihosting")]
+    semihosting::process::abort();
 
     halt();
 }

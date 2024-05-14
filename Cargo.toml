@@ -40,3 +40,7 @@ exception-handler = []
 panic-handler = []
 halt-cores = []
 colors = []
+custom-halt = []
+
+[lints.rust]
+unexpected_cfgs = "allow"

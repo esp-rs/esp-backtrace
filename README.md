@@ -1,4 +1,8 @@
-# esp-backtrace - backtrace for ESP32 bare-metal
+# esp-backtrace - backtrace for ESP32 bare-metal---
+
+## This project has moved! It can now be found in the [esp-rs/esp-hal](https://github.com/esp-rs/esp-hal/tree/main/esp-backtrace) repository.
+
+---
 
 Supports the ESP32, ESP32-C2/C3/C6, ESP32-H2, ESP32-P4, and ESP32-S2/S3. Optional exception and panic handlers are included, both of which can be enabled via their respective features.
 

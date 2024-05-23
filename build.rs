@@ -23,6 +23,10 @@ fn main() {
         panic!("A backend needs to be selected");
     }
 
+    if cfg!(feature = "custom-halt") && cfg!(feature = "halt-cores") {
+        panic!("Only one of `custom-halt` and `halt-cores` can be enabled");
+    }
+
     if is_nightly() {
         println!("cargo:rustc-cfg=nightly");
     }
